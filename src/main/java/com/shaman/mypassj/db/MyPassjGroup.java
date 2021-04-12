@@ -19,6 +19,7 @@ public class MyPassjGroup {
         this.orderNumber = orderNumber;
     }
 
+
     public Long getId() {
         return id;
     }
