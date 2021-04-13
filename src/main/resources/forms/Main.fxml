@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.Group?>
+<?import javafx.scene.control.ContextMenu?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
@@ -16,10 +17,23 @@
 <?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.VBox?>
 
-
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="682.0" prefWidth="939.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.shaman.mypassj.controllers.MainController">
    <left>
-      <TreeView fx:id="treeViewMain" prefHeight="200.0" prefWidth="300.0" BorderPane.alignment="CENTER" />
+      <TreeView fx:id="treeViewMain" prefHeight="200.0" prefWidth="300.0" BorderPane.alignment="CENTER">
+         <contextMenu>
+            <ContextMenu id="contextMenuTreeViewMain" onShowing="#showingPopMenu" onShown="#shownPopMenu">
+              <items>
+                  <Menu fx:id="addContextMenuTreeViewMain" mnemonicParsing="false" text="Add">
+                    <items>
+                      <MenuItem fx:id="addItemContextMenuTreeViewMain" mnemonicParsing="false" onAction="#addItem" text="New Item" />
+                      <MenuItem fx:id="addChildContextMenuTreeViewMain" mnemonicParsing="false" onAction="#addChildItem" text="New Child Item" />
+                    </items>
+                  </Menu>
+                  <MenuItem fx:id="editContextMenuTreeViewMain" mnemonicParsing="false" onAction="#editItem" text="Edit" />
+                  <MenuItem fx:id="deleteContextMenuTreeViewMain" mnemonicParsing="false" onAction="#deleteItem" text="Delete" />
+              </items>
+            </ContextMenu>
+         </contextMenu></TreeView>
    </left>
    <top>
       <MenuBar fx:id="menuBarMain" BorderPane.alignment="CENTER">
