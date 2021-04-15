@@ -19,7 +19,7 @@
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="682.0" prefWidth="939.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.shaman.mypassj.controllers.MainController">
    <left>
-      <TreeView fx:id="treeViewMain" prefHeight="200.0" prefWidth="300.0" BorderPane.alignment="CENTER">
+      <TreeView fx:id="treeViewMain" onMouseClicked="#clickTreeViewMain" prefHeight="200.0" prefWidth="300.0" BorderPane.alignment="CENTER">
          <contextMenu>
             <ContextMenu id="contextMenuTreeViewMain" onShowing="#showingPopMenu" onShown="#shownPopMenu">
               <items>
@@ -36,7 +36,7 @@
          </contextMenu></TreeView>
    </left>
    <top>
-      <MenuBar fx:id="menuBarMain" BorderPane.alignment="CENTER">
+      <MenuBar fx:id="menuBarMain" prefHeight="35.0" prefWidth="961.0" BorderPane.alignment="CENTER">
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
@@ -61,42 +61,38 @@
         <tabs>
           <Tab fx:id="tabNotes" text="Notes">
                <content>
-                  <TilePane prefHeight="200.0" prefWidth="200.0">
+                  <TilePane prefHeight="454.0" prefWidth="392.0">
                      <children>
-                        <TilePane prefHeight="622.0" prefWidth="737.0">
+                        <Group>
                            <children>
-                              <Group>
+                              <VBox prefHeight="200.0" prefWidth="100.0">
                                  <children>
-                                    <VBox prefHeight="200.0" prefWidth="100.0">
-                                       <children>
-                                          <Label text="Label" />
-                                          <TextArea prefHeight="200.0" prefWidth="200.0" />
-                                       </children>
-                                    </VBox>
+                                    <Label text="Label" />
+                                    <TextArea prefHeight="200.0" prefWidth="200.0" />
                                  </children>
-                              </Group>
-                              <Group layoutX="10.0" layoutY="10.0">
-                                 <children>
-                                    <VBox prefHeight="200.0" prefWidth="100.0">
-                                       <children>
-                                          <Label text="Label" />
-                                          <TextArea prefHeight="200.0" prefWidth="200.0" />
-                                       </children>
-                                    </VBox>
-                                 </children>
-                              </Group>
-                              <Group layoutX="10.0" layoutY="10.0">
-                                 <children>
-                                    <VBox prefHeight="200.0" prefWidth="100.0">
-                                       <children>
-                                          <Label text="Label" />
-                                          <TextArea prefHeight="200.0" prefWidth="200.0" />
-                                       </children>
-                                    </VBox>
-                                 </children>
-                              </Group>
+                              </VBox>
                            </children>
-                        </TilePane>
+                        </Group>
+                        <Group>
+                           <children>
+                              <VBox prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <Label text=" Label 3" />
+                                    <TextArea prefHeight="201.0" prefWidth="124.0" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </Group>
+                        <Group>
+                           <children>
+                              <VBox prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <Label text="Label" />
+                                    <TextArea prefHeight="200.0" prefWidth="200.0" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </Group>
                      </children>
                   </TilePane>
                </content>
@@ -110,6 +106,15 @@
                             <TableColumn prefWidth="75.0" text="C1" />
                             <TableColumn prefWidth="75.0" text="C2" />
                           </columns>
+                           <contextMenu>
+                              <ContextMenu>
+                                <items>
+                                  <MenuItem fx:id="addNotePopMenu" mnemonicParsing="false" onAction="#addNote" text="New Note" />
+                                    <MenuItem fx:id="editNotePopMenu" mnemonicParsing="false" onAction="#editNote" text="Edit Note" />
+                                    <MenuItem fx:id="deleteNotePopMenu" mnemonicParsing="false" onAction="#deleteNote" text="Delete Note" />
+                                </items>
+                              </ContextMenu>
+                           </contextMenu>
                         </TableView>
                      </children>
                   </AnchorPane>

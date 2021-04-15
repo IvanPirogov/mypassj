@@ -37,7 +37,6 @@ public class CryptoDB {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-
     }
 
     public int Encrypt(){
@@ -58,7 +57,6 @@ public class CryptoDB {
             fos.flush();
             fos.close();
             System.out.println("File Encrypted.");
-
         } catch (IllegalBlockSizeException e) {
             e.printStackTrace();
         } catch (BadPaddingException e) {

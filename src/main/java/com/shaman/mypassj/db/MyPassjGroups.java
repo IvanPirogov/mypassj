@@ -4,9 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.scene.control.TreeItem;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Objects;
 
 
@@ -19,9 +17,8 @@ public class MyPassjGroups {
     }
 
     private static void createRootGroup() {
-        MyPassjGroup root = new MyPassjGroup();
-        root.New(0L, 0L,"ROOT",0, 0);
-        rootGroup = root;
+        rootGroup= new MyPassjGroup();
+        rootGroup.New(MyPassjSetting.getIdCounter("GROUP"), 0L,"ROOT",0, 0);
     }
 
     static public MyPassjGroup addGroup(MyPassjGroup parentGroup, Long id, String name, Integer orderNumber){
@@ -31,7 +28,7 @@ public class MyPassjGroups {
         }
         else {
             group = new MyPassjGroup();
-            group.New(DataFile.getIdCounter(), parentGroup.getId(), name, parentGroup.getLevel() + 1, orderNumber);
+            group.New(MyPassjSetting.getIdCounter("GROUP"), parentGroup.getId(), name, parentGroup.getLevel() + 1, orderNumber);
 
         }
         parentGroup.getGroupList().add(group);
@@ -66,14 +63,7 @@ public class MyPassjGroups {
 
     static public TreeItem<MyPassjGroup> buildTreeItem(){
         TreeItem<MyPassjGroup> resTeeItem = null;
-//  begin test
-        rootGroup = new MyPassjGroup(0L, 0L, "ROOT", 0,0); // test
-        rootGroup.getGroupList().add(new MyPassjGroup(1L, 0L,  "Work", 1,1));  // test
-        MyPassjGroup second = new MyPassjGroup(2L, 0L,  "Home", 1,2);
-        second.getGroupList().add(new MyPassjGroup(4L, 2L,  "Room", 2,1));
-        rootGroup.getGroupList().add(second);  // test
-        rootGroup.getGroupList().add(new MyPassjGroup(3L, 0L,  "Wife", 1,3));  //test
-//  end test
+        rootGroup = rootGroupFromJson(DataFile.dataFile.readData("GROUPS"));
         if (rootGroup != null) {
             resTeeItem = new TreeItem<>(rootGroup);
             resTeeItem.setExpanded(true);
@@ -102,7 +92,6 @@ public class MyPassjGroups {
         for (TreeItem<MyPassjGroup> childItem : rootTreeItem.getChildren()) {
             addGroupObjects(childItem, rootGroup, childOrderNumber++);
         }
-        System.out.println(rootGroupToJson());
     }
 
     static private void addGroupObjects(TreeItem<MyPassjGroup> treeItem,MyPassjGroup parentGroup, Integer orderNumber){
@@ -116,5 +105,11 @@ public class MyPassjGroups {
         for (TreeItem<MyPassjGroup> childItem : treeItem.getChildren()) {
             addGroupObjects(childItem, group, childOrderNumber++);
         }
+    }
+
+    static public void saveGroups(TreeItem<MyPassjGroup> rootTreeItem){
+        buildGroupObjects(rootTreeItem);
+        DataFile.dataFile.writeData(rootGroupToJson(), "GROUPS");
+        MyPassjSetting.writeSettings();
     }
 }
