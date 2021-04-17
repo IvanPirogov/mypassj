@@ -11,14 +11,13 @@ import java.util.Objects;
 public class MyPassjGroups {
     private static MyPassjGroup rootGroup = null ;
 
-    static public MyPassjGroup getRootGroup() {
+    static public void getRootGroup() {
         if (Objects.isNull(rootGroup)) createRootGroup();
-        return rootGroup;
     }
 
     private static void createRootGroup() {
         rootGroup= new MyPassjGroup();
-        rootGroup.New(MyPassjSetting.getIdCounter("GROUP"), 0L,"ROOT",0, 0);
+        rootGroup.New(0L, 0L,"ROOT",0, 0);
     }
 
     static public MyPassjGroup addGroup(MyPassjGroup parentGroup, Long id, String name, Integer orderNumber){
@@ -29,7 +28,6 @@ public class MyPassjGroups {
         else {
             group = new MyPassjGroup();
             group.New(MyPassjSetting.getIdCounter("GROUP"), parentGroup.getId(), name, parentGroup.getLevel() + 1, orderNumber);
-
         }
         parentGroup.getGroupList().add(group);
         return group;

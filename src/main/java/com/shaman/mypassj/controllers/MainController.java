@@ -1,23 +1,40 @@
 package com.shaman.mypassj.controllers;
 
 import com.shaman.mypassj.MainApp;
-import com.shaman.mypassj.db.DataFile;
-import com.shaman.mypassj.db.MyPassjGroup;
-import com.shaman.mypassj.db.MyPassjGroups;
-import com.shaman.mypassj.db.MyPassjSetting;
+import com.shaman.mypassj.db.*;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainController {
+    private Long noteid = null;
+    private Long loginid = null;
+    private Long groupid = null;
+
+    private ObservableList<MyPassjLogin> loginData = FXCollections.observableArrayList();
 
     @FXML
     private TreeView<MyPassjGroup> treeViewMain;
@@ -41,33 +58,67 @@ public class MainController {
     @FXML
     private Tab tabLogins;
 
-    @FXML
-    private TableView<?> tableViewLogins;
 
-    private static void changed(ObservableValue<? extends TreeItem<MyPassjGroup>> v, TreeItem<MyPassjGroup> oldValue, TreeItem<MyPassjGroup> newValue) {
-        if (newValue != null) System.out.println(newValue.getValue().getName());
+    @FXML
+    private ScrollPane noteScrollPane;
+
+    @FXML
+    private Button noteAddButton;
+
+    @FXML
+    private Button editNodeButton;
+
+    @FXML
+    private Button deleteNoteButton;
+
+
+    @FXML
+    private TilePane noteTilePane;
+
+    private void showNotes(Long groupid){
+        List<MyPassjNote> listNote = MyPassjNotes.getMyPassjNotes().stream()
+                .filter(note -> note.getGroupid() == groupid)
+                .sorted(Comparator.comparing(MyPassjNote::getUpdateddt).reversed())
+                .collect(Collectors.toList());
+        noteTilePane.getChildren().clear();
+        for (MyPassjNote note : listNote){ showNote(note); }
+        disableNoteButtons();
+    }
+
+    private void changed(ObservableValue<? extends TreeItem<MyPassjGroup>> v, TreeItem<MyPassjGroup> oldValue, TreeItem<MyPassjGroup> newValue) {
+        if (newValue != null) {
+            groupid = newValue.getValue().getId();
+            showNotes(newValue.getValue().getId());
+            showLogins(newValue.getValue().getId());
+            noteid = null;
+            loginid = null;
+            showLogins(groupid);
+            disableNoteButtons();
+        }
     }
 
     private String callEditGroupForm(String path, String group)  {
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("/forms/EditGroup.fxml"));
-        Scene sceneEditGroup = null;
         try {
-            sceneEditGroup = new Scene(fxmlLoader.load());
+            FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("/forms/EditGroup.fxml"));
+            Scene sceneEditGroup = new Scene(fxmlLoader.load());
+            EditGroupController controller = (EditGroupController) fxmlLoader.getController();
+            controller.initialize(path,group);
+            Stage stageEditGroup = new Stage();
+            stageEditGroup.setTitle("Edit the group");
+            stageEditGroup.setScene(sceneEditGroup);
+            stageEditGroup.initModality(Modality.APPLICATION_MODAL);
+            stageEditGroup.showAndWait();
+            return controller.getName();
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
-        EditGroupController controller = fxmlLoader.getController();
-        controller.initialize(path,group);
-        Stage stageEditGroup = new Stage();
-        stageEditGroup.setTitle("Edit the group");
-        stageEditGroup.setScene(sceneEditGroup);
-        stageEditGroup.initModality(Modality.APPLICATION_MODAL);
-        stageEditGroup.showAndWait();
-        return controller.getName();
+
     }
 
     private String buildFullGroupPath(TreeItem<MyPassjGroup> item){
         TreeItem<MyPassjGroup> parent = item.getParent();
+        if (parent == null) return "";
         String path = parent.getValue().getName();
         parent = parent.getParent();
         while(parent != null) {
@@ -163,27 +214,40 @@ public class MainController {
         }
     }
 
-    private String callEditNoteForm(String name, String body, LocalDateTime createddt, LocalDateTime updateddt)  {
-        FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("/forms/EditNote.fxml"));
-        Scene sceneEditNote = null;
+    @FXML
+    private ScrollPane loginScrollPane;
+
+    @FXML
+    private AnchorPane loginAnchorPane;
+
+    private MyPassjNote callEditNoteForm(Long id, Long groupid, String name, String body, Date createddt, Date updateddt)  {
         try {
-            sceneEditNote = new Scene(fxmlLoader.load());
+            FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("/forms/EditNote.fxml"));
+            Scene sceneEditNote = new Scene(fxmlLoader.load());
+            EditNoteController controller = (EditNoteController) fxmlLoader.getController();
+            controller.initialize(name,body,createddt,updateddt);
+            Stage stageEditGroup = new Stage();
+            stageEditGroup.setTitle("Edit the note");
+            stageEditGroup.setScene(sceneEditNote);
+            stageEditGroup.initModality(Modality.APPLICATION_MODAL);
+            stageEditGroup.showAndWait();
+            if (controller.getResultCode() == 1){
+                MyPassjNote note = new MyPassjNote();
+                if (id < 0) id = MyPassjSetting.getIdCounter("NOTE");
+                note.New(id, groupid, controller.getName(),controller.getBody());
+                note.setCreateddt(controller.getCreateddt());
+                note.setUpdateddt(new Date());
+                return note;
+            } else {return null;}
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
-        EditNoteController controller = fxmlLoader.getController();
-        controller.initialize();
-        Stage stageEditGroup = new Stage();
-        stageEditGroup.setTitle("Edit the note");
-        stageEditGroup.setScene(sceneEditNote);
-        stageEditGroup.initModality(Modality.APPLICATION_MODAL);
-        stageEditGroup.showAndWait();
-        return null;
     }
 
     @FXML
     void addNote() {
-        callEditNoteForm("","", LocalDateTime.now(), LocalDateTime.now());
+
     }
 
     @FXML
@@ -196,14 +260,256 @@ public class MainController {
 
     }
 
+    private void showNote(MyPassjNote note) {
+        SimpleDateFormat dateFor = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String txtBody = note.getBody().lines().limit(20).collect(Collectors.joining ());
+        if (txtBody.length() > 380) {
+            txtBody = txtBody.substring(0,380);
+        }
+        String txt = note.getName();
+        txt += "\n  ________________________________\n\n";
+        txt += "\nUpdated: " + dateFor.format(note.getUpdateddt());
+        txt += " Created: " + dateFor.format(note.getCreateddt());
+        txt += "\n  ________________________________\n\n";
+        txt += txtBody;
+        TextArea noteText = new TextArea();
+        noteText.setId("node" + note.getId());
+        noteText.setPrefWidth(250);
+        noteText.setPrefHeight(380);
+        noteText.setText(txt);
+        noteText.setWrapText(true);
+        noteText.setEditable(false);
+        noteText.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                if(mouseEvent.getButton().equals(MouseButton.PRIMARY)){
+                    noteid = note.getId();
+                    disableNoteButtons();
+                    if(mouseEvent.getClickCount() == 2){
+                        clickEditNode();
+                    }
+                }
+            }
+        });
+
+        noteTilePane.getChildren().add(noteText);
+    }
+
+    private void disableNoteButtons(){
+        noteAddButton.setDisable(groupid == null);
+        editNodeButton.setDisable(noteid == null);
+        deleteNoteButton.setDisable(noteid == null);
+    }
+    private void disableLoginButtons(){
+        loginAddButton.setDisable(groupid == null);
+        editLoginButton.setDisable(loginid == null);
+        deleteLoginButton.setDisable(loginid == null);
+    }
 
     @FXML
     public void initialize() {
+        try {
+            Image img = new Image("forms/pics/noteAdd.png");
+            noteAddButton.setGraphic(new ImageView(img));
+            img = new Image("forms/pics/noteEdit.png");
+            editNodeButton.setGraphic(new ImageView(img));
+            img = new Image("forms/pics/noteDelete.png");
+            deleteNoteButton.setGraphic(new ImageView(img));
+        }catch (Exception e){
+
+        }
+        disableNoteButtons();
+        MyPassjNotes.readNotesFromDB();
+        MyPassjLogins.readLoginsFromDB();
         treeViewMain.setRoot(MyPassjGroups.buildTreeItem());
-        treeViewMain.getSelectionModel().selectedItemProperty().addListener(MainController::changed);
+        treeViewMain.getSelectionModel().selectedItemProperty().addListener(this::changed);
 
+        ChangeListener<Number> noteSizeListener = this::changedNoteSize;
+        noteScrollPane.widthProperty().addListener(noteSizeListener);
+        noteScrollPane.heightProperty().addListener(noteSizeListener);
 
+        loginTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                loginid = newSelection.getId();
+                disableLoginButtons();
+            }
+        });
+
+        nameLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("name"));
+        sourceLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("source"));
+        loginLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("login"));
+        passwordLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("password"));
+
+        loginTable.setItems(loginData);
+    }
+
+    @FXML
+    void clickAddNote() {
+        if (treeViewMain.getSelectionModel().getSelectedItem() != null) {
+            MyPassjNote note = callEditNoteForm(-1L,groupid,"","", new Date(), new Date());
+            if ( note != null) {
+                MyPassjNotes.addNote(note);
+                showNotes(groupid);
+                noteid = null;
+                disableNoteButtons();
+            }
+        }
+    }
+
+    @FXML
+    void clickEditNode() {
+        if (noteid != null) {
+            MyPassjNote note = MyPassjNotes.getNode(noteid);
+            if (note != null) {
+                note = callEditNoteForm(noteid, groupid, note.getName(), note.getBody(), note.getCreateddt(), note.getUpdateddt());
+                if (note !=null) {
+                    MyPassjNotes.editNote(note);
+                    showNotes(groupid);
+                }
+            }
+        }
+    }
+
+    @FXML
+    void clickDeleteNote(){
+        if (noteid != null){
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Delete the note");
+            String  s = "Delete this note ?";
+            alert.setContentText(s);
+            Optional<ButtonType> result = alert.showAndWait();
+            if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
+                MyPassjNotes.deleteNote(noteid);
+                showNotes(groupid);
+                noteid = null;
+                disableNoteButtons();
+            }
+        }
+    }
+
+    @FXML
+    void clickNoteTilePine(){
+        noteid = null;
+        disableNoteButtons();
+    }
+
+    private void changedNoteSize(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+        noteTilePane.setMinWidth(noteScrollPane.getWidth() - 25);
+    }
+
+    @FXML
+    private Button loginAddButton;
+
+    @FXML
+    private Button editLoginButton;
+
+    @FXML
+    private Button deleteLoginButton;
+
+    @FXML
+    private TableView<MyPassjLogin> loginTable;
+
+    @FXML
+    private TableColumn<MyPassjLogin, String> nameLoginTable;
+
+    @FXML
+    private TableColumn<MyPassjLogin, String> sourceLoginTable;
+
+    @FXML
+    private TableColumn<MyPassjLogin, String> loginLoginTable;
+
+    @FXML
+    private TableColumn<MyPassjLogin, String> passwordLoginTable;
+
+    @FXML
+    void clickAddLogin() {
+        if (treeViewMain.getSelectionModel().getSelectedItem() != null) {
+            MyPassjLogin login = callEditLoginForm(-1L,groupid,"","", "","","","",new Date(), new Date());
+            if ( login != null) {
+                MyPassjLogins.addLogin(login);
+                showLogins(groupid);
+                loginid = null;
+                disableLoginButtons();
+
+            }
+        }
 
     }
+
+    @FXML
+    void clickDeleteLogin() {
+        if (loginid != null){
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Delete the login");
+            String  s = "Delete this login ?";
+            alert.setContentText(s);
+            Optional<ButtonType> result = alert.showAndWait();
+            if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
+                MyPassjLogins.deleteLogin(loginid);
+                showLogins(groupid);
+                loginid = null;
+                disableLoginButtons();
+            }
+        }
+
+    }
+
+    @FXML
+    void clickEditLogin() {
+        MyPassjLogin login = loginTable.getSelectionModel().getSelectedItem();
+        if (login != null) {
+            login = callEditLoginForm(login.getId(), groupid, login.getName(), login.getSource(), login.getLogin()
+                    , login.getPassword(), login.getPort(), login.getMemo(), login.getCreateddt(), login.getUpdateddt());
+            if (login !=null) {
+                MyPassjLogins.editLogin(login);
+                showLogins(groupid);
+            }
+        }
+    }
+
+    private MyPassjLogin callEditLoginForm(Long id, Long groupid, String name, String source, String login, String password, String port, String memo, Date createddt, Date updateddt)  {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("/forms/EditLogin.fxml"));
+            Scene sceneEditLogin = new Scene(fxmlLoader.load());
+            EditLoginController controller = (EditLoginController) fxmlLoader.getController();
+            controller.initialize(name, source, login, password, port, memo, createddt, updateddt);
+            Stage stageEditLogin = new Stage();
+            stageEditLogin.setTitle("Edit the login");
+            stageEditLogin.setScene(sceneEditLogin);
+            stageEditLogin.initModality(Modality.APPLICATION_MODAL);
+            stageEditLogin.showAndWait();
+            if (controller.getResultCode() == 1){
+                if (id < 0) id = MyPassjSetting.getIdCounter("LOGIN");
+                MyPassjLogin newlogin = new MyPassjLogin(id, groupid, controller.getName(),controller.getSource()
+                        , controller.getLogin(), controller.getPassword(), controller.getPort()
+                        , controller.getMemo(), createddt, new Date());
+                return newlogin;
+            } else {return null;}
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @FXML
+    void clickLoginTable(MouseEvent event) {
+        if (loginid != null){
+            if(event.getClickCount() == 2){
+                clickEditLogin();
+            }
+        }
+    }
+
+    private void showLogins(Long groupid){
+        List<MyPassjLogin> listLogin = MyPassjLogins.getMyPassjLogins().stream()
+                .filter(login -> login.getGroupid() == groupid)
+                .sorted(Comparator.comparing(MyPassjLogin::getUpdateddt).reversed())
+                .collect(Collectors.toList());
+        loginTable.getItems().clear();
+        for (MyPassjLogin login: listLogin){ loginData.add(login); }
+        disableLoginButtons();
+    }
+
+
 }
 

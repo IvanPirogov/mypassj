@@ -1,8 +1,11 @@
 package com.shaman.mypassj.db;
 
 import com.shaman.mypassj.crypto.CryptoDB;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 
 import java.io.*;
+import java.util.Optional;
 
 public class DataFile {
 
@@ -49,7 +52,9 @@ public class DataFile {
     public int OpenDatafile(){
         File f = new File(cryptoFile);
         if (f.exists()) {
-            cryptoData.Decrypt();
+           if (cryptoData.Decrypt() == 0){
+                MyPassjSetting.readInnerSettings();
+           }
         } else {
             return 1; // File is not exists or directory is not correctly
         }
@@ -63,16 +68,39 @@ public class DataFile {
 
     public int CreateDatafile(){
     // Create Settings
+        MyPassjSetting.resetAllIdCounters();
         MyPassjSetting.writeSettings();
 
     // Create rootGroup
-        MyPassjSetting.resetIdCounter("GROUP");
         MyPassjGroups.getRootGroup();
-        DataFile.dataFile.writeData(MyPassjGroups.rootGroupToJson(), "GROUPS");
-        File f = new File(cryptoFile);
+        dataFile.writeData(MyPassjGroups.rootGroupToJson(), "GROUPS");
 
-        if (f.exists())
-            System.out.println("Exists");
+    // Create Notes
+        dataFile.writeData("", "MOTES");
+
+    // Create Logins
+        dataFile.writeData("", "LOGINS");
+
+    // Create CryptoFile
+        File f = new File(cryptoFile);
+        if (f.exists()) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Create a new DB");
+            String s = "\nDatafile with this name exists.";
+            s = s + "\n\nRecreate the Datafile?";
+            alert.setContentText(s);
+            Optional<ButtonType> result = alert.showAndWait();
+            if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
+                try{
+                    if(! f.createNewFile()) return 1;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return 1;
+                }
+            } else {
+                return 1;
+            }
+        }
         else
             try{
                 if(! f.createNewFile()) return 1;
@@ -99,13 +127,16 @@ public class DataFile {
             case "DOCS" -> rawFileDocs;
             default -> rawFile;
         };
-        try (FileInputStream f = new FileInputStream(fileName)) {
-            byte[] strToBytes = f.readAllBytes();
-            return new String(strToBytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        if(new File(fileName).exists()) {
+            try (FileInputStream f = new FileInputStream(fileName)) {
+                byte[] strToBytes = f.readAllBytes();
+                if (strToBytes == null) return null;
+                else return new String(strToBytes);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }else return null;
     }
 
     public int writeData(String data, String fileType){

@@ -6,11 +6,10 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="165.0" prefWidth="487.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.shaman.mypassj.controllers.EditGroupController">
    <children>
-      <Button fx:id="okButton" layoutX="244.0" layoutY="109.0" mnemonicParsing="false" onAction="#okGrroup" prefHeight="38.0" prefWidth="111.0" text="OK" />
-      <Button fx:id="cancelButton" layoutX="367.0" layoutY="109.0" mnemonicParsing="false" onAction="#cancelGroup" prefHeight="38.0" prefWidth="100.0" text="Cancel" />
+      <Button fx:id="okButton" layoutX="355.0" layoutY="109.0" mnemonicParsing="false" onAction="#okGrroup" prefHeight="38.0" prefWidth="111.0" text="OK" />
+      <Button fx:id="cancelButton" layoutX="244.0" layoutY="109.0" mnemonicParsing="false" onAction="#cancelGroup" prefHeight="38.0" prefWidth="100.0" text="Cancel" />
       <Label fx:id="pathLabel" layoutX="61.0" layoutY="25.0" text="Label">
          <font>
             <Font name="System Bold" size="13.0" />

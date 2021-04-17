@@ -1,17 +1,20 @@
 package com.shaman.mypassj.controllers;
 
 import java.net.URL;
-        import java.util.ResourceBundle;
-        import javafx.fxml.FXML;
-        import javafx.scene.control.Button;
-        import javafx.scene.control.Label;
-        import javafx.scene.control.TextArea;
-        import javafx.scene.control.TextField;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.ResourceBundle;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+
 
 public class EditNoteController {
 
-    private String name = null;
+    private Date dtCreated = null;
     private int resultCode  = -1; // -1 - error, 0 - press cancelButton, 1 - press okButton
 
     @FXML
@@ -57,13 +60,18 @@ public class EditNoteController {
     }
 
     @FXML
-    void initialize() {
-        assert nameTextField != null : "fx:id=\"nameTextField\" was not injected: check your FXML file 'EditNote.fxml'.";
-        assert bodyTextArea != null : "fx:id=\"bodyTextArea\" was not injected: check your FXML file 'EditNote.fxml'.";
-        assert cancelButtonEditNote != null : "fx:id=\"cancelButtonEditNote\" was not injected: check your FXML file 'EditNote.fxml'.";
-        assert okButtonEditNote != null : "fx:id=\"okButtonEditNote\" was not injected: check your FXML file 'EditNote.fxml'.";
-        assert createddtLabel != null : "fx:id=\"createddtLabel\" was not injected: check your FXML file 'EditNote.fxml'.";
-        assert updateddtLabel != null : "fx:id=\"updateddtLabel\" was not injected: check your FXML file 'EditNote.fxml'.";
-
+    void initialize(String name, String body, Date createddt, Date updatedt) {
+        nameTextField.setText(name);
+        bodyTextArea.setText(body);
+        this.dtCreated = createddt;
+        SimpleDateFormat dateFor = new SimpleDateFormat("MMM dd yyyy hh:mm:ss a");
+        createddtLabel.setText("Created date:  " + dateFor.format(createddt));
+        updateddtLabel.setText("Updated date: " + dateFor.format(updatedt));
     }
+    int getResultCode(){
+        return resultCode;
+    }
+    String getName(){ return nameTextField.getText().trim();}
+    String getBody(){ return bodyTextArea.getText().trim();}
+    Date getCreateddt(){ return this.dtCreated;}
 }

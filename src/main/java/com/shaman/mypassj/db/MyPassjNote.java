@@ -2,21 +2,22 @@ package com.shaman.mypassj.db;
 
 import java.time.LocalDateTime;
 import java.time.chrono.ChronoLocalDateTime;
+import java.util.Date;
 
 public class MyPassjNote {
     private Long id;
     private Long groupid;
     private String name;
     private String body;
-    private LocalDateTime createddt;
-    private LocalDateTime updateddt;
+    private Date createddt;
+    private Date updateddt;
 
 
-    public MyPassjNote(LocalDateTime updateddt){
-        this.updateddt = updateddt;
+    public MyPassjNote(){
+
     }
 
-    public MyPassjNote(Long id, Long groupid, String name, String body, LocalDateTime createddt, LocalDateTime updateddt) {
+    public MyPassjNote(Long id, Long groupid, String name, String body, Date createddt, Date updateddt) {
         this.id = id;
         this.groupid = groupid;
         this.name = name;
@@ -31,15 +32,15 @@ public class MyPassjNote {
         this.groupid = groupid;
         this.name = name;
         this.body = body;
-        this.updateddt =  LocalDateTime.now();
-        this.createddt =  LocalDateTime.now();
+        this.updateddt =  new Date();
+        this.createddt =  new Date();
     }
 
     public void Edit(Long groupid, String name, String body) {
         this.groupid = groupid;
         this.name = name;
         this.body = body;
-        this.updateddt =  LocalDateTime.now();
+        this.updateddt =  new Date();
     }
 
     public Long getId() {
@@ -75,19 +76,19 @@ public class MyPassjNote {
     }
 
 
-    public LocalDateTime getCreateddt() {
+    public Date getCreateddt() {
         return createddt;
     }
 
-    public void setCreateddt(LocalDateTime createddt) {
+    public void setCreateddt(Date createddt) {
         this.createddt = createddt;
     }
 
-    public LocalDateTime getUpdateddt() {
+    public Date getUpdateddt() {
         return updateddt;
     }
 
-    public void setUpdateddt(LocalDateTime updateddt) {
+    public void setUpdateddt(Date updateddt) {
         this.updateddt = updateddt;
     }
 }

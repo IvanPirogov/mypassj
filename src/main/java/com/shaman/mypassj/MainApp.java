@@ -17,7 +17,6 @@ public class MainApp extends Application {
         Scene scene = new Scene(fxmlLoader.load());
         stage.setScene(scene);
         stage.show();
-//        MyPassjGroups.buildGroupObjects(treeViewMain.getRoot());
     }
     public static void main(String[] args) {
 
@@ -26,6 +25,8 @@ public class MainApp extends Application {
         String path = "/home/shaman/tmp/";
         String dbname = "mypassj";
         DataFile.dataFile = new DataFile(dbname, path, password);
+//        DataFile.dataFile.CreateDatafile();
+        DataFile.dataFile.OpenDatafile();
 
 
         launch(args);

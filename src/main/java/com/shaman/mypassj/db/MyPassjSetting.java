@@ -15,7 +15,7 @@ public class MyPassjSetting {
     private  static String dataFileName;
 
     public static Long getIdCounter(String counterType) {
-        return switch (counterType) {
+        Long res = switch (counterType) {
             case "GROUP" -> ++idGroupCounter;
             case "NOTE" -> ++idNoteCounter;
             case "LOGIN" -> ++idLoginCounter;
@@ -23,6 +23,16 @@ public class MyPassjSetting {
             case "DOC" -> ++idDocCounter;
             default -> -1L;
         };
+        writeSettings();
+        return res;
+    }
+
+    public static void resetAllIdCounters() {
+        idGroupCounter = 0L;
+        idNoteCounter = 0L;
+        idLoginCounter = 0L;
+        idIconCounter = 0L;
+        idDocCounter = 0L;
     }
 
     public static void resetIdCounter(String counterType) {
