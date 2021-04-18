@@ -59,6 +59,37 @@
    <center>
       <TabPane fx:id="tabPaneMain" prefHeight="373.0" prefWidth="537.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
         <tabs>
+          <Tab fx:id="tabLogins" text="Logins">
+               <content>
+              <AnchorPane>
+                     <children>
+                        <ToolBar prefHeight="60.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <items>
+                              <Button fx:id="loginAddButton" mnemonicParsing="false" onAction="#clickAddLogin" prefHeight="45.0" prefWidth="45.0" />
+                              <Button fx:id="editLoginButton" mnemonicParsing="false" onAction="#clickEditLogin" prefHeight="45.0" prefWidth="45.0" />
+                              <Button fx:id="deleteLoginButton" mnemonicParsing="false" onAction="#clickDeleteLogin" prefHeight="45.0" prefWidth="45.0" />
+                           </items>
+                        </ToolBar>
+                        <TableView fx:id="loginTable" layoutX="253.0" layoutY="177.0" onMouseClicked="#clickLoginTable" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="60.0">
+                          <columns>
+                            <TableColumn fx:id="nameLoginTable" minWidth="100.0" prefWidth="220.0" text="Name" />
+                            <TableColumn fx:id="sourceLoginTable" minWidth="100.0" prefWidth="220.0" text="Source" />
+                              <TableColumn fx:id="loginLoginTable" minWidth="100.0" prefWidth="220.0" text="Login" />
+                              <TableColumn fx:id="passwordLoginTable" minWidth="100.0" prefWidth="250.0" text="Password" />
+                          </columns>
+                           <contextMenu>
+                              <ContextMenu>
+                                <items>
+                                  <MenuItem fx:id="copyLoginPopMenu" mnemonicParsing="false" onAction="#copyLogin" text="Copy a login" />
+                                    <MenuItem fx:id="copyPasswordPopMenu" mnemonicParsing="false" onAction="#copyPassword" text="Copy a password" />
+                                </items>
+                              </ContextMenu>
+                           </contextMenu>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+               </content>
+          </Tab>
           <Tab fx:id="tabNotes" text="Notes">
                <content>
                   <AnchorPane prefHeight="200.0" prefWidth="200.0">
@@ -79,29 +110,6 @@
                               </TilePane>
                            </content>
                         </ScrollPane>
-                     </children>
-                  </AnchorPane>
-               </content>
-          </Tab>
-          <Tab fx:id="tabLogins" text="Logins">
-               <content>
-              <AnchorPane>
-                     <children>
-                        <ToolBar prefHeight="60.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                           <items>
-                              <Button fx:id="loginAddButton" mnemonicParsing="false" onAction="#clickAddLogin" prefHeight="45.0" prefWidth="60.0" />
-                              <Button fx:id="editLoginButton" mnemonicParsing="false" onAction="#clickEditLogin" prefHeight="45.0" prefWidth="60.0" />
-                              <Button fx:id="deleteLoginButton" mnemonicParsing="false" onAction="#clickDeleteLogin" prefHeight="45.0" prefWidth="60.0" />
-                           </items>
-                        </ToolBar>
-                        <TableView fx:id="loginTable" layoutX="253.0" layoutY="177.0" onMouseClicked="#clickLoginTable" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="60.0">
-                          <columns>
-                            <TableColumn fx:id="nameLoginTable" minWidth="100.0" prefWidth="220.0" text="Name" />
-                            <TableColumn fx:id="sourceLoginTable" minWidth="100.0" prefWidth="220.0" text="Source" />
-                              <TableColumn fx:id="loginLoginTable" minWidth="100.0" prefWidth="220.0" text="Login" />
-                              <TableColumn fx:id="passwordLoginTable" minWidth="100.0" prefWidth="250.0" text="Password" />
-                          </columns>
-                        </TableView>
                      </children>
                   </AnchorPane>
                </content>

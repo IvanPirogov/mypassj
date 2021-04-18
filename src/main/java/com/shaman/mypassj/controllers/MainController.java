@@ -2,6 +2,7 @@ package com.shaman.mypassj.controllers;
 
 import com.shaman.mypassj.MainApp;
 import com.shaman.mypassj.db.*;
+import com.sun.javafx.menu.MenuItemBase;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -11,6 +12,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
@@ -24,9 +26,13 @@ import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MainController {
@@ -42,6 +48,9 @@ public class MainController {
 
     @FXML
     private MenuItem addChildContextMenuTreeViewMain;
+
+    @FXML
+    private MenuItem addItemContextMenuTreeViewMain;
 
     @FXML
     private MenuItem editContextMenuTreeViewMain;
@@ -140,6 +149,7 @@ public class MainController {
                 item.getChildren().add(newItem);
                 item.setExpanded(true);
                 MyPassjGroups.saveGroups(treeViewMain.getRoot());
+                treeViewMain.getSelectionModel().select(newItem);
             }
         }
     }
@@ -156,6 +166,7 @@ public class MainController {
                     TreeItem<MyPassjGroup> newItem = new TreeItem<>(group);
                     item.getParent().getChildren().add(newItem);
                     MyPassjGroups.saveGroups(treeViewMain.getRoot());
+                    treeViewMain.getSelectionModel().select(newItem);
                 }
             }
         }
@@ -165,7 +176,7 @@ public class MainController {
     void deleteItem() {
 //        ((Stage) treeViewMain.getScene().getWindow()).close();
         if (treeViewMain.getSelectionModel().getSelectedItem() != null) {
-            TreeItem<?> item = treeViewMain.getSelectionModel().getSelectedItem();
+            TreeItem<MyPassjGroup> item = treeViewMain.getSelectionModel().getSelectedItem();
             if (item != treeViewMain.getRoot()) {
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle("Delete the group");
@@ -174,8 +185,13 @@ public class MainController {
                 alert.setContentText(s);
                 Optional<ButtonType> result = alert.showAndWait();
                 if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
+                    TreeItem<MyPassjGroup> selectItem =  item.getParent();;
+                    if (item.previousSibling().getValue() != null) {selectItem = item.previousSibling();
+                    } else if (item.nextSibling() != null) {selectItem = item.nextSibling();}
                     treeViewMain.getSelectionModel().getSelectedItem().getParent().getChildren().remove(item);
                     MyPassjGroups.saveGroups(treeViewMain.getRoot());
+                    treeViewMain.getSelectionModel().select(selectItem);
+
                 }
             }
         }
@@ -196,10 +212,18 @@ public class MainController {
 
     @FXML
     void showingPopMenu() {
-        boolean sel = (treeViewMain.getSelectionModel().getSelectedItem() == null);
-        addChildContextMenuTreeViewMain.setDisable(sel);
-        deleteContextMenuTreeViewMain.setDisable(sel);
-        editContextMenuTreeViewMain.setDisable(sel);
+        addChildContextMenuTreeViewMain.setDisable(true);
+        deleteContextMenuTreeViewMain.setDisable(true);
+        editContextMenuTreeViewMain.setDisable(true);
+        addItemContextMenuTreeViewMain.setDisable(true);
+        if (treeViewMain.getSelectionModel().getSelectedItem() != null) {
+            addChildContextMenuTreeViewMain.setDisable(false);
+            if (treeViewMain.getSelectionModel().getSelectedItem() != treeViewMain.getRoot()) {
+                addItemContextMenuTreeViewMain.setDisable(false);
+                deleteContextMenuTreeViewMain.setDisable(false);
+                editContextMenuTreeViewMain.setDisable(false);
+            }
+        }
     }
 
     @FXML
@@ -304,6 +328,9 @@ public class MainController {
         loginAddButton.setDisable(groupid == null);
         editLoginButton.setDisable(loginid == null);
         deleteLoginButton.setDisable(loginid == null);
+        copyLoginPopMenu.setDisable(groupid == null);
+        copyPasswordPopMenu.setDisable(groupid == null);
+
     }
 
     @FXML
@@ -318,11 +345,22 @@ public class MainController {
         }catch (Exception e){
 
         }
+        try {
+            Image img = new Image("forms/pics/loginAdd.png");
+            loginAddButton.setGraphic(new ImageView(img));
+            img = new Image("forms/pics/loginEdit.png");
+            editLoginButton.setGraphic(new ImageView(img));
+            img = new Image("forms/pics/loginDelete.png");
+            deleteLoginButton.setGraphic(new ImageView(img));
+        }catch (Exception e){
+
+        }
         disableNoteButtons();
         MyPassjNotes.readNotesFromDB();
         MyPassjLogins.readLoginsFromDB();
         treeViewMain.setRoot(MyPassjGroups.buildTreeItem());
         treeViewMain.getSelectionModel().selectedItemProperty().addListener(this::changed);
+        treeViewMain.getSelectionModel().select(treeViewMain.getRoot());
 
         ChangeListener<Number> noteSizeListener = this::changedNoteSize;
         noteScrollPane.widthProperty().addListener(noteSizeListener);
@@ -341,6 +379,7 @@ public class MainController {
         passwordLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("password"));
 
         loginTable.setItems(loginData);
+        disableLoginButtons();
     }
 
     @FXML
@@ -463,6 +502,7 @@ public class MainController {
             if (login !=null) {
                 MyPassjLogins.editLogin(login);
                 showLogins(groupid);
+                disableLoginButtons();
             }
         }
     }
@@ -496,6 +536,7 @@ public class MainController {
         if (loginid != null){
             if(event.getClickCount() == 2){
                 clickEditLogin();
+                disableLoginButtons();
             }
         }
     }
@@ -508,6 +549,32 @@ public class MainController {
         loginTable.getItems().clear();
         for (MyPassjLogin login: listLogin){ loginData.add(login); }
         disableLoginButtons();
+    }
+
+    @FXML
+    private MenuItem copyLoginPopMenu;
+
+    @FXML
+    private MenuItem copyPasswordPopMenu;
+
+    @FXML
+    void copyLogin() {
+        MyPassjLogin login = loginTable.getSelectionModel().getSelectedItem();
+        if (login != null) {
+            StringSelection stringSelection = new StringSelection(login.getLogin());
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(stringSelection, null);
+        }
+    }
+
+    @FXML
+    void copyPassword() {
+            MyPassjLogin login = loginTable.getSelectionModel().getSelectedItem();
+            if (login != null) {
+                StringSelection stringSelection = new StringSelection(login.getPassword());
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(stringSelection, null);
+        }
     }
 
 

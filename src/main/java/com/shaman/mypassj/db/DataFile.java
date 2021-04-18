@@ -3,6 +3,8 @@ package com.shaman.mypassj.db;
 import com.shaman.mypassj.crypto.CryptoDB;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import org.json.JSONObject;
+
 
 import java.io.*;
 import java.util.Optional;
@@ -21,7 +23,9 @@ public class DataFile {
     private final String passw;
     CryptoDB cryptoData;
 
-    public String getFileSettings() { return rawFileSettings;}
+    public String getFileSettings() {
+        return rawFileSettings;
+    }
 
     public DataFile(String rawFile, String rawFileGroups, String rawFileNotes, String rawFileLogins, String rawFileSettings, String rawFileIcons, String cryptoFile, String passw) {
         this.rawFile = rawFile;
@@ -37,7 +41,7 @@ public class DataFile {
 
     public DataFile(String datafileName, String path, String passw) {
         this.passw = passw;
-        if (path.charAt(path.length()-1) != '/') path += "/";
+        if (path.charAt(path.length() - 1) != '/') path += "/";
         this.rawFile = path + "._" + datafileName + ".sys";
         this.rawFileGroups = path + "._" + datafileName + "_groups.sys";
         this.rawFileNotes = path + "._" + datafileName + "_notes.sys";
@@ -49,39 +53,42 @@ public class DataFile {
         cryptoData = new CryptoDB(passw, rawFile, cryptoFile);
     }
 
-    public int OpenDatafile(){
+    public int OpenDatafile() {
         File f = new File(cryptoFile);
         if (f.exists()) {
-           if (cryptoData.Decrypt() == 0){
+            if (cryptoData.Decrypt() == 0) {
+                unpackDataFromFile();
                 MyPassjSetting.readInnerSettings();
-           }
+            }
         } else {
             return 1; // File is not exists or directory is not correctly
         }
         return 0;  // File is OK
     }
 
-    public int SaveDataFile(){
+    public int SaveDataFile() {
+        packDataToFile();
         cryptoData.Encrypt();
-        return  0;
+        deleteSysDatafiles();
+        return 0;
     }
 
-    public int CreateDatafile(){
-    // Create Settings
+    public int CreateDatafile() {
+        // Create Settings
         MyPassjSetting.resetAllIdCounters();
         MyPassjSetting.writeSettings();
 
-    // Create rootGroup
+        // Create rootGroup
         MyPassjGroups.getRootGroup();
         dataFile.writeData(MyPassjGroups.rootGroupToJson(), "GROUPS");
 
-    // Create Notes
+        // Create Notes
         dataFile.writeData("", "MOTES");
 
-    // Create Logins
+        // Create Logins
         dataFile.writeData("", "LOGINS");
 
-    // Create CryptoFile
+        // Create CryptoFile
         File f = new File(cryptoFile);
         if (f.exists()) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -91,8 +98,8 @@ public class DataFile {
             alert.setContentText(s);
             Optional<ButtonType> result = alert.showAndWait();
             if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
-                try{
-                    if(! f.createNewFile()) return 1;
+                try {
+                    if (!f.createNewFile()) return 1;
                 } catch (IOException e) {
                     e.printStackTrace();
                     return 1;
@@ -100,10 +107,9 @@ public class DataFile {
             } else {
                 return 1;
             }
-        }
-        else
-            try{
-                if(! f.createNewFile()) return 1;
+        } else
+            try {
+                if (!f.createNewFile()) return 1;
             } catch (IOException e) {
                 e.printStackTrace();
                 return 1;
@@ -111,10 +117,34 @@ public class DataFile {
         return 0;
     }
 
-    public int CloseDatafile(){
-        File f = new File(rawFile);
-        if (! f.delete()) return 1;
-        return 0;
+    private void packDataToFile() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("SETTINGS",readData("SETTINGS"));
+        jsonObject.put("GROUPS",readData("GROUPS"));
+        jsonObject.put("LOGINS",readData("LOGINS"));
+        jsonObject.put("NOTES",readData("NOTES"));
+        writeData(jsonObject.toString(),"");
+    }
+
+    private void unpackDataFromFile() {
+        JSONObject jsonObject = new JSONObject(readData(""));
+        writeData( jsonObject.get("SETTINGS").toString(), "SETTINGS");
+        writeData( jsonObject.get("GROUPS").toString(), "GROUPS");
+        writeData( jsonObject.get("LOGINS").toString(), "LOGINS");
+        writeData( jsonObject.get("NOTES").toString(), "NOTES");
+    }
+
+    public void deleteSysDatafiles(){
+        File f = new File(rawFileGroups);
+        if (f.exists()) f.delete();
+        f = new File(rawFileNotes);
+        if (f.exists()) f.delete();
+        f = new File(rawFileLogins);
+        if (f.exists()) f.delete();
+        f = new File(rawFileSettings);
+        if (f.exists()) f.delete();
+        f = new File(rawFile);
+        if (f.exists()) f.delete();
     }
 
     public String readData(String fileType){

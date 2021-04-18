@@ -77,11 +77,7 @@ public class CryptoDB {
         return 0;
     }
 
-    public int Decrypt(){
-        return 0;
-    }
-
-    public int Decrypt_(){
+     public int Decrypt(){
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             cipher.init(Cipher.DECRYPT_MODE, key,iv);
