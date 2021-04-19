@@ -15,7 +15,7 @@ public class MyPassjGroups {
         if (Objects.isNull(rootGroup)) createRootGroup();
     }
 
-    private static void createRootGroup() {
+    public static void createRootGroup() {
         rootGroup= new MyPassjGroup();
         rootGroup.New(0L, 0L,"ROOT",0, 0);
     }

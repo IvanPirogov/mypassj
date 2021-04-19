@@ -5,13 +5,12 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="222.0" prefWidth="342.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.shaman.mypassj.controllers.DialogDBController">
    <children>
       <Button fx:id="openButton" layoutX="126.0" layoutY="71.0" mnemonicParsing="false" onAction="#clickOpenButton" prefHeight="40.0" prefWidth="200.0" text="Open database" />
       <Button fx:id="createButton" layoutX="126.0" layoutY="118.0" mnemonicParsing="false" onAction="#clickCreateButton" prefHeight="40.0" prefWidth="200.0" text="Create database" />
       <Button fx:id="closeButton" layoutX="224.0" layoutY="179.0" mnemonicParsing="false" onAction="#clickCloseButton" prefHeight="31.0" prefWidth="110.0" text="Close" />
-      <Label layoutX="112.0" layoutY="21.0" text="Datbase  does not exist." />
+      <Label layoutX="112.0" layoutY="21.0" text="Database  does not exist." />
       <Label layoutX="112.0" layoutY="46.0" text="Please select your action." />
       <ImageView fx:id="imgDB" fitHeight="86.0" fitWidth="93.0" layoutX="12.0" layoutY="21.0" pickOnBounds="true" preserveRatio="true" />
    </children>

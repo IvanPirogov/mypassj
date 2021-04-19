@@ -21,7 +21,7 @@ public class DataFile {
     private final String rawFileDocs;
     private final String cryptoFile;
     private final String passw;
-    CryptoDB cryptoData;
+    public CryptoDB cryptoData;
 
     public String getFileSettings() {
         return rawFileSettings;
@@ -59,11 +59,11 @@ public class DataFile {
             if (cryptoData.Decrypt() == 0) {
                 unpackDataFromFile();
                 MyPassjSetting.readInnerSettings();
-            }
+            } else return 1;
         } else {
-            return 1; // File is not exists or directory is not correctly
+            return 1;
         }
-        return 0;  // File is OK
+        return 0;
     }
 
     public int SaveDataFile() {
@@ -79,11 +79,11 @@ public class DataFile {
         MyPassjSetting.writeInnerSettings();
 
         // Create rootGroup
-        MyPassjGroups.getRootGroup();
+        MyPassjGroups.createRootGroup();
         dataFile.writeData(MyPassjGroups.rootGroupToJson(), "GROUPS");
 
         // Create Notes
-        dataFile.writeData("", "MOTES");
+        dataFile.writeData("", "NOTES");
 
         // Create Logins
         dataFile.writeData("", "LOGINS");

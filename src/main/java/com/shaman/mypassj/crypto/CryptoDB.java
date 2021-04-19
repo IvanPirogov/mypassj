@@ -1,13 +1,11 @@
 package com.shaman.mypassj.crypto;
 
-import javax.crypto.BadPaddingException;
+import com.shaman.mypassj.controllers.MainController;
+import javafx.scene.control.Alert;
+
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -18,7 +16,8 @@ public class CryptoDB {
     private SecretKeySpec key;
     private String rawFile;
     private String cryptoFile;
-    public CryptoDB(String password,String rawFile, String cryptoFile) {
+
+    public void createKey(String password){
         try {
             final MessageDigest md = MessageDigest.getInstance("md5");
             md.update(password.getBytes(StandardCharsets.UTF_8));
@@ -31,12 +30,15 @@ public class CryptoDB {
             final byte[] hashiv = md.digest();
             this.iv = new IvParameterSpec(hashiv);
 
-            this.cryptoFile = cryptoFile;
-            this.rawFile = rawFile;
-
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
+    }
+    public CryptoDB(String password,String rawFile, String cryptoFile) {
+        createKey(password);
+        this.cryptoFile = cryptoFile;
+        this.rawFile = rawFile;
+
     }
 
     public int Encrypt(){
@@ -56,25 +58,12 @@ public class CryptoDB {
             fis.close();
             fos.flush();
             fos.close();
-            System.out.println("File Encrypted.");
-        } catch (IllegalBlockSizeException e) {
+            return 0;
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            return 1;
         }
-        return 0;
+
     }
 
      public int Decrypt(){
@@ -94,25 +83,16 @@ public class CryptoDB {
             fis.close();
             fos.flush();
             fos.close();
-            System.out.println("File Decrypted.");
-        } catch (InvalidKeyException e) {
+            return 0;
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error alert");
+            alert.setHeaderText("Can not decrypt DB");
+            alert.setContentText("Try to enter a correct password!");
+            alert.showAndWait();
+            return 1;
         }
-        return 0;
     }
 
 }

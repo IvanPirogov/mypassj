@@ -115,4 +115,20 @@ public class MyPassjSetting {
             System.err.println(e.getMessage());
         }
     }
+
+    public static String getDbPath() {
+        return dbPath;
+    }
+
+    public static void setDbPath(String dbPath) {
+        MyPassjSetting.dbPath = dbPath;
+    }
+
+    public static String getDbName() {
+        return dbName;
+    }
+
+    public static void setDbName(String dbName) {
+        MyPassjSetting.dbName = dbName;
+    }
 }

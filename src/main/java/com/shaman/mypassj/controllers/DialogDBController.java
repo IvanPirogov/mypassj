@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import com.shaman.mypassj.db.MyPassjSetting;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -16,6 +17,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.util.Pair;
 
 public class DialogDBController {
@@ -23,6 +26,18 @@ public class DialogDBController {
     private String pathname = null;
     private String dbname = null;
     private String password = null;
+
+    public String getPathname() {
+        return pathname;
+    }
+
+    public String getDbname() {
+        return dbname;
+    }
+
+    public String getPassword() {
+        return password;
+    }
 
 
     @FXML
@@ -128,35 +143,47 @@ public class DialogDBController {
 
         Optional<Pair<String, String>> result = dialog.showAndWait();
 
-        result.ifPresent(usernamePassword -> {
-            dbname = usernamePassword.getKey() ;
-            password =  usernamePassword.getValue();
+        result.ifPresent(dbNamePassword -> {
+            password =  dbNamePassword.getValue();
+            MyPassjSetting.setDbName(dbNamePassword.getKey());
+            MyPassjSetting.setDbPath(pathname);
         });
     }
 
-    @FXML
-    void clickCreateButton() {
+    public void createDB(Window window){
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Select a directory");
-        File selectedDirectory = chooser.showDialog(openButton.getScene().getWindow());
+        File selectedDirectory = chooser.showDialog(window);
         pathname = selectedDirectory.getPath();
         DialogPassword();
+    }
+    @FXML
+    void clickCreateButton() {
+        createDB(openButton.getScene().getWindow());
+        ((Stage) closeButton.getScene().getWindow()).close();
 
-        //       DataFile.dataFile.CreateDatafile();
     }
 
-    @FXML
-    void clickOpenButton() {
+    public void openDB(Window window){
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open DB");
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("DB files (*.mpj)", "*.mpj"));
-                //new FileChooser.ExtensionFilter("All Files", "*.*"));
-        File file = fileChooser.showOpenDialog(openButton.getScene().getWindow());
+        //new FileChooser.ExtensionFilter("All Files", "*.*"));
+        File file = fileChooser.showOpenDialog(window);
         if (file != null) {
+            MyPassjSetting.setDbPath(file.getParent());
+            MyPassjSetting.setDbName(file.getName().substring(0,file.getName().length() - 4 ));
             pathname = file.getParent();
             dbname = file.getName().substring(0,file.getName().length() - 4 );
+            password = null;
+
         }
+    }
+    @FXML
+    void clickOpenButton() {
+        openDB(openButton.getScene().getWindow());
+        ((Stage) closeButton.getScene().getWindow()).close();
     }
 
     @FXML
@@ -168,4 +195,6 @@ public class DialogDBController {
         }
 
     }
+
+
 }

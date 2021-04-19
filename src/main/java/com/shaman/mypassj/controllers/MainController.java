@@ -2,7 +2,8 @@ package com.shaman.mypassj.controllers;
 
 import com.shaman.mypassj.MainApp;
 import com.shaman.mypassj.db.*;
-import com.sun.javafx.menu.MenuItemBase;
+import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -10,9 +11,13 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
@@ -25,10 +30,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -39,8 +46,22 @@ public class MainController {
     private Long noteid = null;
     private Long loginid = null;
     private Long groupid = null;
+    String passw = null;
+    boolean started = false;
 
     private ObservableList<MyPassjLogin> loginData = FXCollections.observableArrayList();
+
+    @FXML
+    private MenuItem addMainMenuTreeViewMain;
+
+    @FXML
+    private MenuItem addChildMainMenuTreeViewMain;
+
+    @FXML
+    private MenuItem editMainMenuTreeViewMain;
+
+    @FXML
+    private MenuItem deleteMainMenuTreeViewMain;
 
     @FXML
     private TreeView<MyPassjGroup> treeViewMain;
@@ -186,7 +207,7 @@ public class MainController {
                 Optional<ButtonType> result = alert.showAndWait();
                 if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
                     TreeItem<MyPassjGroup> selectItem =  item.getParent();;
-                    if (item.previousSibling().getValue() != null) {selectItem = item.previousSibling();
+                    if (item.previousSibling() != null) {selectItem = item.previousSibling();
                     } else if (item.nextSibling() != null) {selectItem = item.nextSibling();}
                     treeViewMain.getSelectionModel().getSelectedItem().getParent().getChildren().remove(item);
                     MyPassjGroups.saveGroups(treeViewMain.getRoot());
@@ -216,12 +237,20 @@ public class MainController {
         deleteContextMenuTreeViewMain.setDisable(true);
         editContextMenuTreeViewMain.setDisable(true);
         addItemContextMenuTreeViewMain.setDisable(true);
+        addMainMenuTreeViewMain.setDisable(true);
+        addChildMainMenuTreeViewMain.setDisable(true);
+        editMainMenuTreeViewMain.setDisable(true);
+        deleteMainMenuTreeViewMain.setDisable(true);
         if (treeViewMain.getSelectionModel().getSelectedItem() != null) {
             addChildContextMenuTreeViewMain.setDisable(false);
+            addChildMainMenuTreeViewMain.setDisable(false);
             if (treeViewMain.getSelectionModel().getSelectedItem() != treeViewMain.getRoot()) {
                 addItemContextMenuTreeViewMain.setDisable(false);
                 deleteContextMenuTreeViewMain.setDisable(false);
                 editContextMenuTreeViewMain.setDisable(false);
+                addMainMenuTreeViewMain.setDisable(false);
+                editMainMenuTreeViewMain.setDisable(false);
+                deleteMainMenuTreeViewMain.setDisable(false);
             }
         }
     }
@@ -292,7 +321,7 @@ public class MainController {
         }
         String txt = note.getName();
         txt += "\n  ________________________________\n\n";
-        txt += "\nUpdated: " + dateFor.format(note.getUpdateddt());
+        txt += "Updated: " + dateFor.format(note.getUpdateddt());
         txt += " Created: " + dateFor.format(note.getCreateddt());
         txt += "\n  ________________________________\n\n";
         txt += txtBody;
@@ -345,65 +374,175 @@ public class MainController {
             stageEditGroup.setScene(sceneEditNote);
             stageEditGroup.initModality(Modality.APPLICATION_MODAL);
             stageEditGroup.showAndWait();
+            passw = controller.getPassword();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    @FXML
-    public void initialize() {
-        String password = "Pasport";
-        String path = "/home/shaman/tmp/";
-        String dbname = "mypassj";
+    private void dialogPassword(){
+        Dialog<Pair<String, String>> dialog = new Dialog<>();
+        dialog.setTitle("Enter password");
+        dialog.setHeaderText("Enter your password");
+        try {
+            dialog.setGraphic(new ImageView(new Image("forms/pics/databaseLock44.png")));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        ButtonType okButtonType = new ButtonType("ok", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, okButtonType);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        PasswordField passwordPasswordField = new PasswordField();
+        passwordPasswordField.setPromptText("Password");
+
+        Label labelPassword = new Label("isEmpty");
+        labelPassword.setTextFill(javafx.scene.paint.Color.web("#d00"));
+
+        grid.add(new Label("Password:"), 0, 1);
+        grid.add(passwordPasswordField, 1, 1);
+        grid.add(labelPassword, 2, 1);
+
+        Node okButton = dialog.getDialogPane().lookupButton(okButtonType);
+        okButton.setDisable(true);
+
+        passwordPasswordField.textProperty().addListener((observable, oldValue, newValue) -> {
+            okButton.setDisable(newValue.trim().isEmpty());
+            labelPassword.setVisible(newValue.trim().isEmpty());
+        });
+
+        dialog.getDialogPane().setContent(grid);
+
+        Platform.runLater(() -> passwordPasswordField.requestFocus());
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButtonType) {
+                return new Pair<>("passw", passwordPasswordField.getText());
+            }
+            return null;
+        });
+
+        Optional<Pair<String, String>> result = dialog.showAndWait();
+
+        result.ifPresent(dbNamePassword -> {
+            passw =  dbNamePassword.getValue();
+        });
+
+    }
+
+    private void openDB(){
+//        dialogPassword();
+        while (DataFile.dataFile.OpenDatafile() == 1){
+            passw = null;
+            dialogPassword();
+            if (passw ==null) {
+                openDialogDB();
+                if (passw !=null) {
+                    DataFile.dataFile = new DataFile(MyPassjSetting.getDbName(), MyPassjSetting.getDbPath(), passw);
+                    DataFile.dataFile.CreateDatafile();
+                } else {
+                    dialogPassword();
+                    if (passw !=null) {
+                        DataFile.dataFile = new DataFile(MyPassjSetting.getDbName(), MyPassjSetting.getDbPath(), passw);
+                        openDB();
+                    }
+                }
+                break;
+            }
+            else DataFile.dataFile.cryptoData.createKey(passw);
+        }
+
+    }
+
+    private void initDB(){
         if (MyPassjSetting.readOuterSettings() == 1){
             openDialogDB();
         }
-        DataFile.dataFile = new DataFile(dbname, path, password);
-//        DataFile.dataFile.readData()
-//        DataFile.dataFile.CreateDatafile();
-        DataFile.dataFile.OpenDatafile();
-
-        try {
-            noteAddButton.setGraphic(new ImageView(new Image("forms/pics/noteAdd.png")));
-            editNodeButton.setGraphic(new ImageView(new Image("forms/pics/noteEdit.png")));
-            deleteNoteButton.setGraphic(new ImageView(new Image("forms/pics/noteDelete.png")));
-        }catch (Exception e){
-            e.printStackTrace();
+        File fbd = new File(MyPassjSetting.getDbPath() + "/" + MyPassjSetting.getDbName() + ".mpj");
+        if (!fbd.exists()){
+            openDialogDB();
         }
-        try {
-            loginAddButton.setGraphic(new ImageView(new Image("forms/pics/loginAdd.png")));
-            editLoginButton.setGraphic(new ImageView(new Image("forms/pics/loginEdit.png")));
-            deleteLoginButton.setGraphic(new ImageView(new Image("forms/pics/loginDelete.png")));
-        }catch (Exception e){
-            e.printStackTrace();
+        if (passw !=null) {
+            DataFile.dataFile = new DataFile(MyPassjSetting.getDbName(), MyPassjSetting.getDbPath(), passw);
+            DataFile.dataFile.CreateDatafile();
+        } else {
+            dialogPassword();
+            if (passw !=null) {
+                DataFile.dataFile = new DataFile(MyPassjSetting.getDbName(), MyPassjSetting.getDbPath(), passw);
+                openDB();
+            }
         }
+        if (passw ==null) {
+            Platform.exit();
+            System.exit(0);
+        }
+        MyPassjSetting.writeOuterSettings();
+    }
 
-        disableNoteButtons();
+    @FXML
+    public void initialize() {
+
+        if (!started) {
+            initDB();
+
+            try {
+                noteAddButton.setGraphic(new ImageView(new Image("forms/pics/noteAdd.png")));
+                editNodeButton.setGraphic(new ImageView(new Image("forms/pics/noteEdit.png")));
+                deleteNoteButton.setGraphic(new ImageView(new Image("forms/pics/noteDelete.png")));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                loginAddButton.setGraphic(new ImageView(new Image("forms/pics/loginAdd.png")));
+                editLoginButton.setGraphic(new ImageView(new Image("forms/pics/loginEdit.png")));
+                deleteLoginButton.setGraphic(new ImageView(new Image("forms/pics/loginDelete.png")));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            disableNoteButtons();
+
+            treeViewMain.getSelectionModel().selectedItemProperty().addListener(this::changed);
+
+            ChangeListener<Number> noteSizeListener = this::changedNoteSize;
+            noteScrollPane.widthProperty().addListener(noteSizeListener);
+            noteScrollPane.heightProperty().addListener(noteSizeListener);
+
+            loginTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+                if (newSelection != null) {
+                    loginid = newSelection.getId();
+                    disableLoginButtons();
+                }
+            });
+
+            nameLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("name"));
+            sourceLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("source"));
+            loginLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("login"));
+            passwordLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("password"));
+
+            loginTable.setItems(loginData);
+            disableLoginButtons();
+            started = true;
+        }
         MyPassjNotes.readNotesFromDB();
         MyPassjLogins.readLoginsFromDB();
         treeViewMain.setRoot(MyPassjGroups.buildTreeItem());
-        treeViewMain.getSelectionModel().selectedItemProperty().addListener(this::changed);
         treeViewMain.getSelectionModel().select(treeViewMain.getRoot());
 
-        ChangeListener<Number> noteSizeListener = this::changedNoteSize;
-        noteScrollPane.widthProperty().addListener(noteSizeListener);
-        noteScrollPane.heightProperty().addListener(noteSizeListener);
-
-        loginTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                loginid = newSelection.getId();
-                disableLoginButtons();
-            }
-        });
-
-        nameLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("name"));
-        sourceLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("source"));
-        loginLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("login"));
-        passwordLoginTable.setCellValueFactory(new PropertyValueFactory<MyPassjLogin, String>("password"));
-
-        loginTable.setItems(loginData);
-        disableLoginButtons();
+        dbInfoLabelBottom.setText("DB name: " + MyPassjSetting.getDbName());
+        pathInfoLabelBottom.setText("DB path: " + MyPassjSetting.getDbPath());
     }
+
+    @FXML
+    Label pathInfoLabelBottom;
+
+    @FXML
+    Label dbInfoLabelBottom;
 
     @FXML
     void clickAddNote() {
@@ -600,6 +739,46 @@ public class MainController {
         }
     }
 
+    @FXML
+    private MenuItem closeMainMenu;
+
+    @FXML
+    private BorderPane mainBorderPane;
+
+    @FXML
+    void clickOpenDbMainMenu() {
+        passw = null;
+        DialogDBController controller = new DialogDBController();
+        controller.openDB((Stage) mainBorderPane.getScene().getWindow());
+        if (controller.getDbname() != null) dialogPassword();
+        if (passw !=null) {
+            DataFile.dataFile.SaveDataFile();
+            MyPassjSetting.writeOuterSettings();
+            DataFile.dataFile = new DataFile(MyPassjSetting.getDbName(), MyPassjSetting.getDbPath(), passw);
+            openDB();
+            initialize();
+        } else MyPassjSetting.readOuterSettings();
+    }
+
+    @FXML
+    void clickCreateDbMainMenu() {
+        passw = null;
+        DialogDBController controller = new DialogDBController();
+        controller.createDB((Stage) mainBorderPane.getScene().getWindow());
+        passw = controller.getPassword();
+        if (passw !=null) {
+            DataFile.dataFile.SaveDataFile();
+            MyPassjSetting.writeOuterSettings();
+            DataFile.dataFile = new DataFile(MyPassjSetting.getDbName(), MyPassjSetting.getDbPath(), passw);
+            DataFile.dataFile.CreateDatafile();
+            initialize();
+        } else MyPassjSetting.readOuterSettings();
+    }
+
+    @FXML
+    void clickCloseMainMenu() {
+        ((Stage) mainBorderPane.getScene().getWindow()).close();
+    }
 
 }
 
