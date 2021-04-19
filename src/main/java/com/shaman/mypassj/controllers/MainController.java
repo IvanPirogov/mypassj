@@ -464,12 +464,13 @@ public class MainController {
             openDialogDB();
         }
         File fbd = new File(MyPassjSetting.getDbPath() + "/" + MyPassjSetting.getDbName() + ".mpj");
-        if (!fbd.exists()){
+        if ((!fbd.exists()) && (passw == null)){
             openDialogDB();
         }
         if (passw !=null) {
             DataFile.dataFile = new DataFile(MyPassjSetting.getDbName(), MyPassjSetting.getDbPath(), passw);
             DataFile.dataFile.CreateDatafile();
+            MyPassjSetting.writeOuterSettings();
         } else {
             dialogPassword();
             if (passw !=null) {
