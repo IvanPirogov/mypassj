@@ -333,28 +333,51 @@ public class MainController {
 
     }
 
+    private void openDialogDB(){
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("/forms/DialogDB.fxml"));
+            Scene sceneEditNote = null;
+            sceneEditNote = new Scene(fxmlLoader.load());
+            DialogDBController controller = (DialogDBController) fxmlLoader.getController();
+            controller.initialize();
+            Stage stageEditGroup = new Stage();
+            stageEditGroup.setTitle("Dialog DB");
+            stageEditGroup.setScene(sceneEditNote);
+            stageEditGroup.initModality(Modality.APPLICATION_MODAL);
+            stageEditGroup.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @FXML
     public void initialize() {
-        try {
-            Image img = new Image("forms/pics/noteAdd.png");
-            noteAddButton.setGraphic(new ImageView(img));
-            img = new Image("forms/pics/noteEdit.png");
-            editNodeButton.setGraphic(new ImageView(img));
-            img = new Image("forms/pics/noteDelete.png");
-            deleteNoteButton.setGraphic(new ImageView(img));
-        }catch (Exception e){
+        String password = "Pasport";
+        String path = "/home/shaman/tmp/";
+        String dbname = "mypassj";
+        if (MyPassjSetting.readOuterSettings() == 1){
+            openDialogDB();
+        }
+        DataFile.dataFile = new DataFile(dbname, path, password);
+//        DataFile.dataFile.readData()
+//        DataFile.dataFile.CreateDatafile();
+        DataFile.dataFile.OpenDatafile();
 
+        try {
+            noteAddButton.setGraphic(new ImageView(new Image("forms/pics/noteAdd.png")));
+            editNodeButton.setGraphic(new ImageView(new Image("forms/pics/noteEdit.png")));
+            deleteNoteButton.setGraphic(new ImageView(new Image("forms/pics/noteDelete.png")));
+        }catch (Exception e){
+            e.printStackTrace();
         }
         try {
-            Image img = new Image("forms/pics/loginAdd.png");
-            loginAddButton.setGraphic(new ImageView(img));
-            img = new Image("forms/pics/loginEdit.png");
-            editLoginButton.setGraphic(new ImageView(img));
-            img = new Image("forms/pics/loginDelete.png");
-            deleteLoginButton.setGraphic(new ImageView(img));
+            loginAddButton.setGraphic(new ImageView(new Image("forms/pics/loginAdd.png")));
+            editLoginButton.setGraphic(new ImageView(new Image("forms/pics/loginEdit.png")));
+            deleteLoginButton.setGraphic(new ImageView(new Image("forms/pics/loginDelete.png")));
         }catch (Exception e){
-
+            e.printStackTrace();
         }
+
         disableNoteButtons();
         MyPassjNotes.readNotesFromDB();
         MyPassjLogins.readLoginsFromDB();

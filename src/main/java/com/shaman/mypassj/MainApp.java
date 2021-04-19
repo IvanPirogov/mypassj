@@ -19,18 +19,7 @@ public class MainApp extends Application {
         stage.show();
     }
     public static void main(String[] args) {
-
-
-        String password = "Pasport";
-        String path = "/home/shaman/tmp/";
-        String dbname = "mypassj";
-        DataFile.dataFile = new DataFile(dbname, path, password);
-//        DataFile.dataFile.CreateDatafile();
-        DataFile.dataFile.OpenDatafile();
-
-
         launch(args);
-
         DataFile.dataFile.SaveDataFile();
     }
 }

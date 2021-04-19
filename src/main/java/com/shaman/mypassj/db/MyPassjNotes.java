@@ -54,7 +54,7 @@ public class MyPassjNotes {
 
     static public void saveNotes(){
         DataFile.dataFile.writeData(notesToJson(), "NOTES");
-        MyPassjSetting.writeSettings();
+        MyPassjSetting.writeInnerSettings();
     }
 
     static public void readNotesFromDB(){

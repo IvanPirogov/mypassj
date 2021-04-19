@@ -108,6 +108,6 @@ public class MyPassjGroups {
     static public void saveGroups(TreeItem<MyPassjGroup> rootTreeItem){
         buildGroupObjects(rootTreeItem);
         DataFile.dataFile.writeData(rootGroupToJson(), "GROUPS");
-        MyPassjSetting.writeSettings();
+        MyPassjSetting.writeInnerSettings();
     }
 }

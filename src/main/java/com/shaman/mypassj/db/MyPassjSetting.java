@@ -11,8 +11,8 @@ public class MyPassjSetting {
     private  static Long idLoginCounter = 0L;
     private  static Long idIconCounter = 0L;
     private  static Long idDocCounter = 0L;
-    private  static String path;
-    private  static String dataFileName;
+    private  static String dbPath;
+    private  static String dbName;
 
     public static Long getIdCounter(String counterType) {
         Long res = switch (counterType) {
@@ -23,7 +23,7 @@ public class MyPassjSetting {
             case "DOC" -> ++idDocCounter;
             default -> -1L;
         };
-        writeSettings();
+        writeInnerSettings();
         return res;
     }
 
@@ -45,11 +45,11 @@ public class MyPassjSetting {
         };
     }
 
-    public static String getWorkDir() { return path;}
-    public static String getDataFileName() { return dataFileName;}
+    public static String getWorkDir() { return dbName;}
+    public static String getDataFileName() { return dbName;}
 
 
-    public static void writeSettings() {
+    public static void writeInnerSettings() {
         try {
             File f = new File(DataFile.dataFile.getFileSettings());
             if (!f.exists())f.createNewFile();
@@ -89,7 +89,30 @@ public class MyPassjSetting {
 
     }
 
-    public static void readOuterSettings(){
+    public static int readOuterSettings(){
+        try{
+            File f = new File("mypassj.ini");
+            if (!f.exists()) return 1;
+            Wini ini = new Wini(f);
+            dbName = ini.get("main", "dbName", String.class);
+            dbPath = ini.get("main", "dbPath", String.class);
+            return 0;
+        }catch(Exception e){
+            System.err.println(e.getMessage());
+            return 2;
+        }
+    }
 
+    public static void writeOuterSettings() {
+        try {
+            File f = new File("mypassj.ini");
+            if (!f.exists())f.createNewFile();
+            Wini ini = new Wini(f);
+            ini.put("main", "dbName", dbName);
+            ini.put("main", "dbPath", dbPath);
+            ini.store();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
     }
 }

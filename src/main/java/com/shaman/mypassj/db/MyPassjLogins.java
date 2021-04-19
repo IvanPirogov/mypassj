@@ -57,7 +57,7 @@ public class MyPassjLogins {
 
     static public void saveLogins(){
         DataFile.dataFile.writeData(loginsToJson(), "LOGINS");
-        MyPassjSetting.writeSettings();
+        MyPassjSetting.writeInnerSettings();
     }
 
     static public void readLoginsFromDB(){

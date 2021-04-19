@@ -76,7 +76,7 @@ public class DataFile {
     public int CreateDatafile() {
         // Create Settings
         MyPassjSetting.resetAllIdCounters();
-        MyPassjSetting.writeSettings();
+        MyPassjSetting.writeInnerSettings();
 
         // Create rootGroup
         MyPassjGroups.getRootGroup();
